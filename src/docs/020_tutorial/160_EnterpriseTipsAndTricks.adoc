@@ -25,7 +25,7 @@ Since all links of the generated docs are relative, you can use the generated ar
 
 === Dependencies
 
-The 2.2.1 docker image of docToolchain should be self-contained. 
+The 2.2.1 docker image of docToolchain should be self-contained.
 Dependency resolution shouldn't be a problem with this image.
 You should run your build pipeline directly on this image.
 `dtcw` will notice it is running within the image and use the dependencies.
@@ -38,17 +38,61 @@ Create a file `init.gradle` with content like the following:
 
 [source, gradle]
 ----
-allprojects {
-    buildscript {
+
+settingsEvaluated { settings ->
+    settings.pluginManagement {
+        println "removing plugin management repositories: t" + repositories.getNames()
+
+        repositories.clear()
+
+        // add your own artifactory as repository
         repositories {
-            maven { url = "<your maven proxy repository for maven central>" }
+            maven {
+                url "<your maven proxy repository for maven central>"
+                credentials {
+                    username = "<your maven proxy username>"
+                    password = "<your maven proxy password>"
+                }
+            }
         }
+        println "new plugin management repositories: " + repositories.getNames()
     }
-    repositories {
-        maven { url = "<your maven proxy repository for gradle plugins>" }
+    settings.dependencyResolutionManagement {
+        println "removing dependency resolution management repositories: " + repositories.getNames()
+
+        repositories.clear()
+
+        // add your own artifactory as repository
+        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+        repositories {
+            maven {
+                url "<your maven proxy repository for maven central>"
+                credentials {
+                    username = "<your maven proxy username>"
+                    password = "<your maven proxy password>"
+                }
+            }
+        }
+        println "new dependency resolution management repositories: " + repositories.getNames()
     }
 }
+
+// needed because currently gradle does not allow to override the buildscript repositories of the script plugins
+gradle.projectsLoaded {
+	rootProject.allprojects {
+			project.setProperty("mavenRepository", "<your maven proxy repository for maven central>")
+			project.setProperty("mavenUsername", "<your maven proxy username>")
+			project.setProperty("mavenPassword", "<your maven proxy password>")
+
+			project.setProperty("depsMavenRepository", "<your maven proxy repository for maven central>")
+			project.setProperty("depsMavenUsername", "<your maven proxy username>")
+			project.setProperty("depsMavenPassword", "<your maven proxy password>")
+		}
+    }
+}
+
 println ">>> repository locations initialized via init.gradle"
+
 ----
 
 and reference the file when you execute a `dtcw` command like this:
