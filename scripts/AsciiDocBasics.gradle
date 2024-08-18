@@ -3,7 +3,6 @@
  */
 buildscript {
     repositories {
-        mavenCentral()
         maven {
             credentials {
                 username mavenUsername
@@ -11,6 +10,7 @@ buildscript {
             }
             url mavenRepository
         }
+        mavenCentral()
     }
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->

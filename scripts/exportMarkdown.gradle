@@ -1,6 +1,5 @@
 buildscript {
     repositories {
-        mavenCentral()
         maven {
             credentials {
                 username mavenUsername
@@ -8,6 +7,7 @@ buildscript {
             }
             url mavenRepository
         }
+        mavenCentral()
     }
     dependencies {
         //for the markdown conversion
